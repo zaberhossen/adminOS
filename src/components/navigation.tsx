@@ -57,7 +57,7 @@ export function Navigation() {
         </div>
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
           <Link
-            href="#"
+            href="/"
             className="text-sm font-semibold leading-6 text-zinc-900 dark:text-zinc-50"
           >
             Get Started <span aria-hidden="true">&rarr;</span>
@@ -84,7 +84,7 @@ export function Navigation() {
               </Link>
             ))}
             <Link
-              href="#"
+              href="/"
               onClick={() => setMobileMenuOpen(false)}
               className="block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-zinc-900 hover:bg-zinc-100 dark:text-zinc-50 dark:hover:bg-zinc-800"
             >
