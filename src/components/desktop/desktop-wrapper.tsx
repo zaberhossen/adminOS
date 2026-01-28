@@ -29,6 +29,7 @@ export function DesktopWrapper() {
     <div
       className="fixed inset-0 flex flex-col overflow-hidden"
       style={{
+        position: 'fixed',
         backgroundImage: wallpaper.bgImage,
         backgroundColor: wallpaper.bgColor,
         backgroundSize: wallpaper.bgSize ?? "cover",

@@ -8,7 +8,7 @@ import { DesktopIcon as DesktopIconComponent } from "../desktop-icon"
 import { IconPosition } from "@/types/desktop"
 
 interface DesktopProps {
-  constraintsRef: React.RefObject<HTMLDivElement>
+  constraintsRef: React.RefObject<HTMLDivElement | null>
 }
 
 export function Desktop({ constraintsRef }: DesktopProps) {
