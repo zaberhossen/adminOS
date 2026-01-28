@@ -8,22 +8,20 @@ import { DesktopIcon as DesktopIconComponent } from "../desktop-icon"
 import { IconPosition } from "@/types/desktop"
 
 interface DesktopProps {
-  constraintsRef: React.RefObject<HTMLDivElement>
+  constraintsRef: React.RefObject<HTMLDivElement | null>
 }
 
 export function Desktop({ constraintsRef }: DesktopProps) {
   const { addWindow } = useDesktop()
-  const { iconPositions, setIconPosition, resetIconPositions } = useDesktopIcons()
+  const { iconPositions, setIconPosition } = useDesktopIcons()
   const [mounted, setMounted] = useState(false)
   const [rendered, setRendered] = useState(false)
 
   // Generate initial grid positions for icons
   const generateInitialPositions = (): Record<string, IconPosition> => {
     const positions: Record<string, IconPosition> = {}
-    const containerWidth = typeof window !== "undefined" ? window.innerWidth : 1200
     const containerHeight = typeof window !== "undefined" ? window.innerHeight : 800
 
-    const iconWidth = 112
     const iconHeight = 75
     const paddingHorizontal = 12
     const paddingVertical = 20
@@ -61,17 +59,8 @@ export function Desktop({ constraintsRef }: DesktopProps) {
       setRendered(true)
     }, 200)
 
-    // Handle window resize
-    const handleResize = () => {
-      const initialPositions = generateInitialPositions()
-      Object.entries(initialPositions).forEach(([id, position]) => {
-        setIconPosition(id, position)
-      })
-    }
-
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+    // Note: Window resize removed to preserve user's custom icon positions
+  }, [iconPositions, setIconPosition])
 
   const handleIconDoubleClick = (iconId: string) => {
     const icon = DESKTOP_ICONS.find((i) => i.id === iconId)
@@ -80,9 +69,10 @@ export function Desktop({ constraintsRef }: DesktopProps) {
     if (icon.action) {
       icon.action()
     } else if (icon.path) {
+      const timestamp = Date.now()
       addWindow({
-        id: `window-${iconId}-${Date.now()}`,
-        key: `window-${iconId}-${Date.now()}`,
+        id: `window-${iconId}-${timestamp}`,
+        key: `window-${iconId}-${timestamp}`,
         path: icon.path,
         title: icon.label,
         icon: icon.icon,

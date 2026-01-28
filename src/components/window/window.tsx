@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
 
 interface WindowProps {
   windowState: WindowState
-  constraintsRef: React.RefObject<HTMLDivElement>
+  constraintsRef: React.RefObject<HTMLDivElement | null>
 }
 
 const snapThreshold = 50 // pixels from edge to trigger snap

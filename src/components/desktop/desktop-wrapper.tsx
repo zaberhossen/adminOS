@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useRef } from "react"
 import { AnimatePresence } from "framer-motion"
 import { useDesktop, useDesktopSettings } from "@/hooks/use-desktop"
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
@@ -29,6 +29,7 @@ export function DesktopWrapper() {
     <div
       className="fixed inset-0 flex flex-col overflow-hidden"
       style={{
+        position: 'fixed',
         backgroundImage: wallpaper.bgImage,
         backgroundColor: wallpaper.bgColor,
         backgroundSize: wallpaper.bgSize ?? "cover",

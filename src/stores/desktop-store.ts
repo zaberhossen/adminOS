@@ -43,6 +43,7 @@ interface DesktopStore {
   
   // Constraints
   taskbarHeight: number
+  menuBarHeight: number
 }
 
 // Default window size constraints
@@ -90,6 +91,7 @@ export const useDesktopStore = create<DesktopStore>()(
       focusedWindow: null,
       maxZIndex: 1,
       taskbarHeight: 44,
+      menuBarHeight: 44,
       startMenuOpen: false,
       siteSettings: DEFAULT_SITE_SETTINGS,
       iconPositions: {},
@@ -177,6 +179,7 @@ export const useDesktopStore = create<DesktopStore>()(
           const desktopWidth = typeof globalThis.window !== "undefined" ? globalThis.window.innerWidth : 1200
           const desktopHeight = typeof globalThis.window !== "undefined" ? globalThis.window.innerHeight : 800
           const taskbarHeight = state.taskbarHeight
+          const menuBarHeight = state.menuBarHeight
 
           return {
             windows: state.windows.map((w) =>
@@ -189,7 +192,7 @@ export const useDesktopStore = create<DesktopStore>()(
                     position: { x: 0, y: 0 },
                     size: {
                       width: desktopWidth,
-                      height: desktopHeight - taskbarHeight,
+                      height: desktopHeight - taskbarHeight - menuBarHeight,
                     },
                   }
                 : w
@@ -280,10 +283,11 @@ export const useDesktopStore = create<DesktopStore>()(
         const desktopWidth = typeof globalThis.window !== "undefined" ? globalThis.window.innerWidth : 1200
         const desktopHeight = typeof globalThis.window !== "undefined" ? globalThis.window.innerHeight : 800
         const taskbarHeight = get().taskbarHeight
+        const menuBarHeight = get().menuBarHeight
 
         return {
           x: Math.max(0, (desktopWidth - size.width) / 2),
-          y: Math.max(0, (desktopHeight - taskbarHeight - size.height) / 2),
+          y: Math.max(0, (desktopHeight - taskbarHeight - menuBarHeight - size.height) / 2),
         }
       },
 
