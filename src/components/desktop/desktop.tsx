@@ -13,17 +13,15 @@ interface DesktopProps {
 
 export function Desktop({ constraintsRef }: DesktopProps) {
   const { addWindow } = useDesktop()
-  const { iconPositions, setIconPosition, resetIconPositions } = useDesktopIcons()
+  const { iconPositions, setIconPosition } = useDesktopIcons()
   const [mounted, setMounted] = useState(false)
   const [rendered, setRendered] = useState(false)
 
   // Generate initial grid positions for icons
   const generateInitialPositions = (): Record<string, IconPosition> => {
     const positions: Record<string, IconPosition> = {}
-    const containerWidth = typeof window !== "undefined" ? window.innerWidth : 1200
     const containerHeight = typeof window !== "undefined" ? window.innerHeight : 800
 
-    const iconWidth = 112
     const iconHeight = 75
     const paddingHorizontal = 12
     const paddingVertical = 20
@@ -80,9 +78,10 @@ export function Desktop({ constraintsRef }: DesktopProps) {
     if (icon.action) {
       icon.action()
     } else if (icon.path) {
+      const timestamp = Date.now()
       addWindow({
-        id: `window-${iconId}-${Date.now()}`,
-        key: `window-${iconId}-${Date.now()}`,
+        id: `window-${iconId}-${timestamp}`,
+        key: `window-${iconId}-${timestamp}`,
         path: icon.path,
         title: icon.label,
         icon: icon.icon,

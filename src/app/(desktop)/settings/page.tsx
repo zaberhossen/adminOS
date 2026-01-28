@@ -23,10 +23,10 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <h3 className="text-lg font-semibold text-black">Appearance</h3>
               <div className="flex gap-2">
-                {["light", "dark", "system"].map((theme) => (
+                {(["light", "dark", "system"] as const).map((theme) => (
                   <button
                     key={theme}
-                    onClick={() => updateSiteSettings({ theme: theme as any })}
+                    onClick={() => updateSiteSettings({ theme })}
                     className={`rounded border px-4 py-2 text-sm font-medium capitalize transition-colors ${
                       siteSettings.theme === theme
                         ? "bg-blue-500 text-white border-blue-500"
@@ -57,10 +57,10 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <h3 className="text-lg font-semibold text-black">Experience Mode</h3>
               <div className="flex gap-2">
-                {["studyos", "boring"].map((mode) => (
+                {(["studyos", "boring"] as const).map((mode) => (
                   <button
                     key={mode}
-                    onClick={() => updateSiteSettings({ experience: mode as any })}
+                    onClick={() => updateSiteSettings({ experience: mode })}
                     className={`rounded border px-4 py-2 text-sm font-medium capitalize transition-colors ${
                       siteSettings.experience === mode
                         ? "bg-blue-500 text-white border-blue-500"
