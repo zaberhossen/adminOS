@@ -59,17 +59,8 @@ export function Desktop({ constraintsRef }: DesktopProps) {
       setRendered(true)
     }, 200)
 
-    // Handle window resize
-    const handleResize = () => {
-      const initialPositions = generateInitialPositions()
-      Object.entries(initialPositions).forEach(([id, position]) => {
-        setIconPosition(id, position)
-      })
-    }
-
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+    // Note: Window resize removed to preserve user's custom icon positions
+  }, [iconPositions, setIconPosition])
 
   const handleIconDoubleClick = (iconId: string) => {
     const icon = DESKTOP_ICONS.find((i) => i.id === iconId)
