@@ -1,23 +1,19 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { Navigation } from "@/components/navigation";
+import type { Metadata } from "next"
+import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "StudyOS - Product Analytics & More",
-  description: "The all-in-one platform for building better products",
-};
+  title: "StudyOS - Retro Desktop Learning Platform",
+  description: "An open-source student learning application with a desktop OS interface. Built with Next.js, Zustand, and Shadcn UI.",
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
-        <Navigation />
-        {children}
-      </body>
+      <body className="antialiased overflow-hidden">{children}</body>
     </html>
-  );
+  )
 }
