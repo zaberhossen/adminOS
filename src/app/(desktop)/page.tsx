@@ -54,7 +54,7 @@ export default function HomePage() {
 
           <div className="rounded border border-black/20 bg-blue-50 p-4">
             <p className="text-sm text-black/80">
-              <strong>Tip:</strong> Double-click desktop icons to open apps. Drag windows by their title bar. 
+              <strong>Tip:</strong> Click desktop icons to open apps. Drag windows by their title bar. 
               Drag windows to the left or right edge to snap them to half screen.
             </p>
           </div>
