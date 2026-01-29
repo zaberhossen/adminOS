@@ -62,7 +62,7 @@ export function Desktop({ constraintsRef }: DesktopProps) {
     // Note: Window resize removed to preserve user's custom icon positions
   }, [iconPositions, setIconPosition])
 
-  const handleIconDoubleClick = (iconId: string) => {
+  const handleIconClick = (iconId: string) => {
     const icon = DESKTOP_ICONS.find((i) => i.id === iconId)
     if (!icon) return
 
@@ -119,7 +119,7 @@ export function Desktop({ constraintsRef }: DesktopProps) {
               id={icon.id}
               label={icon.label}
               icon={icon.icon}
-              onDoubleClick={() => handleIconDoubleClick(icon.id)}
+              onClick={() => handleIconClick(icon.id)}
             />
           </motion.div>
         )

@@ -5,7 +5,6 @@ import { AnimatePresence } from "framer-motion"
 import { useDesktop, useDesktopSettings } from "@/hooks/use-desktop"
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts"
 import { Desktop } from "./desktop"
-import { Taskbar } from "../taskbar/taskbar"
 import { MenuBar } from "../menu-bar/menu-bar"
 import { Window } from "../window/window"
 import { WALLPAPERS } from "./wallpapers"
@@ -60,9 +59,6 @@ export function DesktopWrapper() {
           ))}
         </AnimatePresence>
       </div>
-
-      {/* Taskbar */}
-      <Taskbar />
     </div>
   )
 }
