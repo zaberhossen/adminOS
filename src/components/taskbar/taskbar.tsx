@@ -39,34 +39,37 @@ export function Taskbar() {
 
   return (
     <>
-      <div className="relative flex h-11 items-center gap-2 bg-gradient-to-b from-[#e8e8e8] to-[#d8d8d8] px-2 shadow-[0_-2px_4px_rgba(0,0,0,0.1)] border-t border-black/10">
+      <div
+        data-scheme="tertiary"
+        className="relative flex h-12 items-center gap-2 bg-primary/70 backdrop-blur-2xl skin-classic:bg-primary px-2 border-t border-primary"
+      >
         {/* Start Button */}
         <button
           onClick={toggleStartMenu}
-          className={`flex items-center gap-2 rounded px-3 py-1.5 text-sm font-bold transition-colors ${
+          className={`flex items-center gap-2 rounded border px-3 py-1.5 text-sm font-bold transition-colors ${
             startMenuOpen
-              ? "bg-gradient-to-b from-[#c0c0c0] to-[#d0d0d0] shadow-inner"
-              : "bg-gradient-to-b from-white to-[#e0e0e0] hover:from-[#f0f0f0] hover:to-[#d8d8d8] shadow-sm"
+              ? "border-primary bg-accent text-primary"
+              : "border-input bg-input text-primary hover:bg-accent"
           }`}
         >
-          <span className="text-lg">🎓</span>
-          <span className="text-black">Start</span>
+          <span className="text-base">🎓</span>
+          <span>Start</span>
         </button>
 
         {/* Separator */}
-        <div className="h-8 w-px bg-black/20" />
+        <div className="h-7 w-px bg-line opacity-60" />
 
         {/* Active Windows */}
-        <div className="flex flex-1 gap-2 overflow-x-auto">
+        <div className="flex flex-1 gap-1.5 overflow-x-auto">
           {windows.map((window) => (
             <button
               key={window.id}
               onClick={() => handleWindowClick(window.id)}
-              className={`flex items-center gap-2 rounded px-3 py-1.5 text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 rounded border px-3 py-1.5 text-sm font-medium transition-colors ${
                 window.isMinimized
-                  ? "bg-gradient-to-b from-white to-[#e0e0e0] text-black/70"
-                  : "bg-gradient-to-b from-[#c8d8f0] to-[#b0c8e8] text-black shadow-sm"
-              } hover:brightness-105`}
+                  ? "border-input bg-input text-muted hover:bg-accent hover:text-secondary"
+                  : "border-primary bg-accent text-primary"
+              }`}
             >
               <span>{window.icon}</span>
               <span className="max-w-[150px] truncate">{window.title}</span>
@@ -76,7 +79,7 @@ export function Taskbar() {
 
         {/* System Tray */}
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-black">
+          <span className="text-xs font-semibold text-secondary tabular-nums">
             {mounted ? time : "--:--"}
           </span>
         </div>

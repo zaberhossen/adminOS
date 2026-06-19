@@ -26,6 +26,7 @@ export function DesktopWrapper() {
 
   return (
     <div
+      data-scheme="primary"
       className="fixed inset-0 flex flex-col overflow-hidden"
       style={{
         position: 'fixed',
@@ -36,19 +37,11 @@ export function DesktopWrapper() {
         backgroundRepeat: wallpaper.bgRepeat ?? "no-repeat",
       }}
     >
-      {/* Subtle overlay for better readability */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-15"
-        style={{
-          backgroundImage: "linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15))",
-        }}
-      />
-
-      {/* Menu Bar (macOS-style) */}
+      {/* Menu Bar (top, translucent) */}
       <MenuBar />
 
       {/* Desktop Area */}
-      <div ref={constraintsRef} className="relative flex-1 overflow-hidden p-3">
+      <div ref={constraintsRef} className="relative flex-1 overflow-hidden">
         {/* Desktop Icons and Background */}
         <Desktop constraintsRef={constraintsRef} />
 

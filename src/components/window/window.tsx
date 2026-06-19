@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState, useEffect } from "react"
-import { motion, useDragControls, PanInfo } from "framer-motion"
+import { motion, useDragControls, useMotionValue, PanInfo } from "framer-motion"
 import { WindowState } from "@/types/window"
 import { useDesktop } from "@/hooks/use-desktop"
 import { WindowChrome } from "./window-chrome"
@@ -13,174 +13,190 @@ interface WindowProps {
   constraintsRef: React.RefObject<HTMLDivElement | null>
 }
 
-const snapThreshold = 50 // pixels from edge to trigger snap
+const snapThreshold = 40 // px from edge to trigger snap
+
+const clamp = (value: number, min: number, max?: number) =>
+  Math.max(min, Math.min(max ?? Infinity, value))
 
 export function Window({ windowState, constraintsRef }: WindowProps) {
   const {
     bringToFront,
     updateWindowPosition,
-    updateWindowSize,
     updateWindow,
+    restoreWindow,
   } = useDesktop()
-  
+
   const windowRef = useRef<HTMLDivElement>(null)
   const dragControls = useDragControls()
   const [isDragging, setIsDragging] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
   const [snapIndicator, setSnapIndicator] = useState<"left" | "right" | null>(null)
 
-  // Handle window focus
+  // Position is driven by motion values so dragging never triggers a React
+  // re-render (smooth + no lag) and the released value is the constraint-clamped
+  // transform (precise — not the raw pointer offset).
+  const x = useMotionValue(windowState.position.x)
+  const y = useMotionValue(windowState.position.y)
+
+  // Bases captured at the start of an interaction, read from refs to avoid
+  // stale-closure bugs in the long-lived pointer listeners.
+  const containerRect = useRef<DOMRect | null>(null)
+  const resizeBase = useRef<{
+    width: number
+    height: number
+    x: number
+    y: number
+  } | null>(null)
+
+  // Sync motion values when position changes from outside a drag
+  // (maximize, restore, snap, resize from a left/top edge).
+  useEffect(() => {
+    if (isDragging) return
+    x.set(windowState.position.x)
+    y.set(windowState.position.y)
+  }, [windowState.position.x, windowState.position.y, isDragging, x, y])
+
   const handleMouseDown = () => {
     if (windowState.isMinimized) return
     bringToFront(windowState.id)
   }
 
-  // Handle drag start
   const handleDragStart = () => {
     setIsDragging(true)
     bringToFront(windowState.id)
+    containerRect.current = constraintsRef.current?.getBoundingClientRect() ?? null
   }
 
-  // Handle drag with snap preview
-  const handleDrag = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (!constraintsRef.current) return
-
-    const containerRect = constraintsRef.current.getBoundingClientRect()
-    const x = info.point.x - containerRect.left
-    const y = info.point.y - containerRect.top
-
-    // Check for snap zones
-    if (x < snapThreshold) {
-      setSnapIndicator("left")
-    } else if (x > containerRect.width - snapThreshold) {
-      setSnapIndicator("right")
-    } else {
+  const handleDrag = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const rect = containerRect.current
+    if (!rect) return
+    const localX = info.point.x - rect.left
+    if (localX < snapThreshold) {
+      if (snapIndicator !== "left") setSnapIndicator("left")
+    } else if (localX > rect.width - snapThreshold) {
+      if (snapIndicator !== "right") setSnapIndicator("right")
+    } else if (snapIndicator !== null) {
       setSnapIndicator(null)
     }
   }
 
-  // Handle drag end with snapping
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     setIsDragging(false)
+    const rect = containerRect.current
+    const localX = rect ? info.point.x - rect.left : null
 
-    if (!constraintsRef.current) return
-
-    const containerRect = constraintsRef.current.getBoundingClientRect()
-    const x = info.point.x - containerRect.left
-
-    // Snap to left half
-    if (x < snapThreshold) {
+    // Snap to a half on release near an edge
+    if (rect && localX !== null && localX < snapThreshold) {
+      setSnapIndicator(null)
       updateWindow(windowState.id, {
         position: { x: 0, y: 0 },
-        size: {
-          width: containerRect.width / 2,
-          height: containerRect.height,
-        },
+        size: { width: Math.round(rect.width / 2), height: rect.height },
         isMaximized: false,
       })
-      setSnapIndicator(null)
       return
     }
-
-    // Snap to right half
-    if (x > containerRect.width - snapThreshold) {
+    if (rect && localX !== null && localX > rect.width - snapThreshold) {
+      setSnapIndicator(null)
       updateWindow(windowState.id, {
-        position: { x: containerRect.width / 2, y: 0 },
-        size: {
-          width: containerRect.width / 2,
-          height: containerRect.height,
-        },
+        position: { x: Math.round(rect.width / 2), y: 0 },
+        size: { width: Math.round(rect.width / 2), height: rect.height },
         isMaximized: false,
       })
-      setSnapIndicator(null)
       return
     }
 
-    // Normal drag - update position
-    const newPosition = {
-      x: windowState.position.x + info.offset.x,
-      y: windowState.position.y + info.offset.y,
-    }
-    updateWindowPosition(windowState.id, newPosition)
     setSnapIndicator(null)
-  }
-
-  // Handle resize
-  const handleResize = (direction: string, delta: { x: number; y: number }) => {
-    const newSize = { ...windowState.size }
-    const newPosition = { ...windowState.position }
-
-    // Resize based on direction
-    if (direction.includes("right")) {
-      newSize.width = Math.max(
-        windowState.sizeConstraints.min.width,
-        Math.min(
-          windowState.sizeConstraints.max?.width || Infinity,
-          windowState.size.width + delta.x
-        )
-      )
-    }
-    if (direction.includes("left")) {
-      const newWidth = Math.max(
-        windowState.sizeConstraints.min.width,
-        Math.min(
-          windowState.sizeConstraints.max?.width || Infinity,
-          windowState.size.width - delta.x
-        )
-      )
-      if (newWidth !== windowState.size.width) {
-        newPosition.x = windowState.position.x + delta.x
-        newSize.width = newWidth
-      }
-    }
-    if (direction.includes("bottom")) {
-      newSize.height = Math.max(
-        windowState.sizeConstraints.min.height,
-        Math.min(
-          windowState.sizeConstraints.max?.height || Infinity,
-          windowState.size.height + delta.y
-        )
-      )
-    }
-    if (direction.includes("top")) {
-      const newHeight = Math.max(
-        windowState.sizeConstraints.min.height,
-        Math.min(
-          windowState.sizeConstraints.max?.height || Infinity,
-          windowState.size.height - delta.y
-        )
-      )
-      if (newHeight !== windowState.size.height) {
-        newPosition.y = windowState.position.y + delta.y
-        newSize.height = newHeight
-      }
-    }
-
-    updateWindow(windowState.id, {
-      position: newPosition,
-      size: newSize,
+    // The motion value already holds the clamped, exact transform.
+    updateWindowPosition(windowState.id, {
+      x: Math.round(x.get()),
+      y: Math.round(y.get()),
     })
   }
 
-  // Don't render if minimized
+  // ---- Resize: capture base size/position once, apply total delta. ----
+  const handleResizeStart = () => {
+    setIsResizing(true)
+    bringToFront(windowState.id)
+    resizeBase.current = {
+      width: windowState.size.width,
+      height: windowState.size.height,
+      x: windowState.position.x,
+      y: windowState.position.y,
+    }
+  }
+
+  const handleResizeEnd = () => {
+    setIsResizing(false)
+    resizeBase.current = null
+  }
+
+  const handleResize = (direction: string, delta: { x: number; y: number }) => {
+    const base = resizeBase.current
+    if (!base) return
+    const { min, max } = windowState.sizeConstraints
+
+    let width = base.width
+    let height = base.height
+    let posX = base.x
+    let posY = base.y
+
+    if (direction.includes("right")) {
+      width = clamp(base.width + delta.x, min.width, max?.width)
+    }
+    if (direction.includes("left")) {
+      width = clamp(base.width - delta.x, min.width, max?.width)
+      posX = base.x + (base.width - width)
+    }
+    if (direction.includes("bottom")) {
+      height = clamp(base.height + delta.y, min.height, max?.height)
+    }
+    if (direction.includes("top")) {
+      height = clamp(base.height - delta.y, min.height, max?.height)
+      posY = base.y + (base.height - height)
+    }
+
+    updateWindow(windowState.id, {
+      size: { width: Math.round(width), height: Math.round(height) },
+      position: { x: Math.round(posX), y: Math.round(posY) },
+    })
+  }
+
+  // ---- Maximize / restore from the real container box (no cutoff). ----
+  const handleToggleMaximize = () => {
+    if (windowState.isMaximized) {
+      restoreWindow(windowState.id)
+      return
+    }
+    const rect = constraintsRef.current?.getBoundingClientRect()
+    if (!rect) return
+    updateWindow(windowState.id, {
+      isMaximized: true,
+      previousPosition: windowState.position,
+      previousSize: windowState.size,
+      position: { x: 0, y: 0 },
+      size: { width: Math.round(rect.width), height: Math.round(rect.height) },
+      zIndex: windowState.zIndex,
+    })
+  }
+
   if (windowState.isMinimized) {
     return null
   }
 
   return (
     <>
-      {/* Snap Indicator */}
+      {/* Snap preview */}
       {snapIndicator && (
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.3 }}
+          animate={{ opacity: 0.4 }}
           className={cn(
-            "pointer-events-none absolute top-0 z-[9999] h-full bg-blue-500",
+            "pointer-events-none absolute top-0 z-[9999] h-full rounded-md border-2 border-blue bg-blue/40",
             snapIndicator === "left" ? "left-0" : "right-0"
           )}
           style={{
-            width: constraintsRef.current
-              ? constraintsRef.current.clientWidth / 2
+            width: containerRect.current
+              ? containerRect.current.width / 2
               : "50%",
           }}
         />
@@ -191,6 +207,7 @@ export function Window({ windowState, constraintsRef }: WindowProps) {
         ref={windowRef}
         drag={!windowState.isMaximized && !isResizing}
         dragControls={dragControls}
+        dragListener={false}
         dragMomentum={false}
         dragElastic={0}
         dragConstraints={constraintsRef}
@@ -198,58 +215,54 @@ export function Window({ windowState, constraintsRef }: WindowProps) {
         onDrag={handleDrag}
         onDragEnd={handleDragEnd}
         onMouseDown={handleMouseDown}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{
-          opacity: 1,
-          scale: 1,
-          x: windowState.position.x,
-          y: windowState.position.y,
-          width: windowState.size.width,
-          height: windowState.size.height,
-        }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{
-          type: "spring",
-          stiffness: 300,
-          damping: 30,
-        }}
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+        transition={{ duration: 0.14, ease: "easeOut" }}
         style={{
           position: "absolute",
+          x,
+          y,
+          width: windowState.size.width,
+          height: windowState.size.height,
           zIndex: windowState.zIndex,
         }}
+        data-scheme="tertiary"
         className={cn(
-          "flex flex-col overflow-hidden rounded-lg shadow-2xl border-2",
-          "border-t-white border-l-white border-r-[#808080] border-b-[#808080]",
-          "bg-[#c0c0c0]"
+          "@container flex flex-col overflow-hidden rounded border bg-transparent",
+          isDragging || isResizing
+            ? "[&_*]:select-none shadow-2xl border-primary"
+            : "shadow-lg border-input"
         )}
       >
-        {/* Window Chrome (Title Bar) */}
+        {/* Title bar */}
         <WindowChrome
           windowState={windowState}
           dragControls={dragControls}
           isDragging={isDragging}
+          onToggleMaximize={handleToggleMaximize}
         />
 
-        {/* Window Content */}
-        <div className="relative flex-1 overflow-auto bg-white">
+        {/* Content */}
+        <div data-scheme="primary" className="relative flex-1 overflow-auto bg-primary text-primary">
           {windowState.element || (
             <div className="flex h-full items-center justify-center p-8 text-center">
               <div>
                 <div className="mb-2 text-4xl">{windowState.icon}</div>
-                <div className="text-lg font-semibold">{windowState.title}</div>
-                <div className="mt-2 text-sm text-black/60">{windowState.path}</div>
+                <div className="text-lg font-semibold text-primary">{windowState.title}</div>
+                <div className="mt-2 text-sm text-muted">{windowState.path}</div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Resize Handles */}
+        {/* Resize handles */}
         {!windowState.isMaximized &&
           windowState.appSettings.resizable !== false && (
             <ResizeHandles
               onResize={handleResize}
-              onResizeStart={() => setIsResizing(true)}
-              onResizeEnd={() => setIsResizing(false)}
+              onResizeStart={handleResizeStart}
+              onResizeEnd={handleResizeEnd}
             />
           )}
       </motion.div>

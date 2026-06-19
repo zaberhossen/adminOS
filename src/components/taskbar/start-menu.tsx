@@ -32,30 +32,33 @@ export function StartMenu() {
   }
 
   return (
-    <div className="absolute bottom-12 left-2 z-[999] w-72 overflow-hidden rounded border-2 border-t-white border-l-white border-r-[#808080] border-b-[#808080] bg-[#c0c0c0] shadow-xl">
+    <div
+      data-scheme="secondary"
+      className="absolute bottom-14 left-2 z-[999] w-72 overflow-hidden rounded-md border border-primary bg-primary shadow-2xl"
+    >
       {/* Header */}
-      <div className="border-b border-[#808080] bg-gradient-to-r from-[#0054e3] to-[#0099ff] px-4 py-3">
+      <div data-scheme="tertiary" className="border-b border-primary bg-accent px-4 py-3">
         <div className="flex items-center gap-3">
           <span className="text-3xl">🎓</span>
           <div>
-            <div className="text-lg font-bold text-white">StudyOS</div>
-            <div className="text-xs text-white/80">Student Learning Platform</div>
+            <div className="text-base font-bold text-primary">StudyOS</div>
+            <div className="text-xs text-secondary">Student Learning Platform</div>
           </div>
         </div>
       </div>
 
       {/* Menu Items */}
-      <div className="divide-y divide-[#a0a0a0]/60 text-sm">
+      <div className="divide-y divide-primary text-sm">
         {/* Apps */}
         <div className="p-2">
-          <div className="mb-2 px-2 text-xs font-bold text-black/60">Applications</div>
+          <div className="mb-1 px-2 text-xs font-semibold text-muted">Applications</div>
           {DESKTOP_ICONS.slice(0, 6).map((icon) => (
             <button
               key={icon.id}
               onClick={() => handleIconClick(icon.id)}
-              className="flex w-full items-center gap-3 rounded px-3 py-2 text-left text-black hover:bg-[#000080] hover:text-white transition-colors"
+              className="flex w-full items-center gap-3 rounded px-3 py-1.5 text-left text-primary hover:bg-accent transition-colors"
             >
-              <span className="text-xl">{icon.icon}</span>
+              <span className="text-lg">{icon.icon}</span>
               <span>{icon.label}</span>
             </button>
           ))}
@@ -63,21 +66,21 @@ export function StartMenu() {
 
         {/* System */}
         <div className="p-2">
-          <div className="mb-2 px-2 text-xs font-bold text-black/60">System</div>
+          <div className="mb-1 px-2 text-xs font-semibold text-muted">System</div>
           <button
             onClick={cycleWallpaper}
-            className="flex w-full items-center gap-3 rounded px-3 py-2 text-left text-black hover:bg-[#000080] hover:text-white transition-colors"
+            className="flex w-full items-center gap-3 rounded px-3 py-1.5 text-left text-primary hover:bg-accent transition-colors"
           >
-            <span className="text-xl">🖼️</span>
+            <span className="text-lg">🖼️</span>
             <span>Change wallpaper</span>
           </button>
           <button
             onClick={() => {
               handleIconClick("settings")
             }}
-            className="flex w-full items-center gap-3 rounded px-3 py-2 text-left text-black hover:bg-[#000080] hover:text-white transition-colors"
+            className="flex w-full items-center gap-3 rounded px-3 py-1.5 text-left text-primary hover:bg-accent transition-colors"
           >
-            <span className="text-xl">⚙️</span>
+            <span className="text-lg">⚙️</span>
             <span>Settings</span>
           </button>
         </div>
@@ -86,9 +89,9 @@ export function StartMenu() {
         <div className="p-2">
           <button
             onClick={() => setStartMenuOpen(false)}
-            className="flex w-full items-center gap-3 rounded px-3 py-2 text-left text-black hover:bg-[#000080] hover:text-white transition-colors"
+            className="flex w-full items-center gap-3 rounded px-3 py-1.5 text-left text-primary hover:bg-accent transition-colors"
           >
-            <span className="text-xl">🚪</span>
+            <span className="text-lg">🚪</span>
             <span>Close menu</span>
           </button>
         </div>

@@ -90,8 +90,8 @@ export const useDesktopStore = create<DesktopStore>()(
       windows: [],
       focusedWindow: null,
       maxZIndex: 1,
-      taskbarHeight: 44,
-      menuBarHeight: 44,
+      taskbarHeight: 0, // no taskbar mounted; menu bar lives at the top
+      menuBarHeight: 36, // matches the h-9 menu bar
       startMenuOpen: false,
       siteSettings: DEFAULT_SITE_SETTINGS,
       iconPositions: {},

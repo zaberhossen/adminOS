@@ -13,7 +13,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <body className="h-full antialiased overflow-hidden">{children}</body>
+      <body
+        className="light h-full antialiased overflow-hidden"
+        data-skin="classic"
+        data-scheme="primary"
+      >
+        {children}
+      </body>
     </html>
   )
 }

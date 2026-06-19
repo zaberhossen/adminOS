@@ -25,16 +25,19 @@ export function MenuBar() {
   }, [])
 
   return (
-    <div className="flex h-11 items-center bg-gradient-to-b from-[#e8e8e8] to-[#d8d8d8] px-2 shadow-sm border-b border-black/10">
+    <div
+      data-scheme="tertiary"
+      className="flex h-9 items-center gap-1 bg-primary/70 backdrop-blur-2xl skin-classic:bg-primary px-2 border-b border-primary"
+    >
       <button
         onClick={toggleStartMenu}
-        className="flex items-center gap-2 rounded px-3 py-1 text-sm font-semibold text-black hover:bg-black/10 transition-colors"
+        className="flex items-center gap-2 rounded px-3 py-1 text-sm font-bold text-primary hover:bg-accent transition-colors"
       >
-        <span className="text-lg">🎓</span>
+        <span className="text-base">🎓</span>
         <span>StudyOS</span>
       </button>
-      
-      <div className="ml-4 flex gap-1">
+
+      <div className="ml-1 flex gap-0.5">
         <MenuBarItem label="File" />
         <MenuBarItem label="Edit" />
         <MenuBarItem label="View" />
@@ -43,7 +46,7 @@ export function MenuBar() {
       </div>
 
       <div className="ml-auto flex items-center gap-2">
-        <span className="text-xs text-black/70">
+        <span className="text-xs text-secondary font-medium tabular-nums">
           {mounted ? time : "--:--"}
         </span>
       </div>
@@ -53,7 +56,7 @@ export function MenuBar() {
 
 function MenuBarItem({ label }: { label: string }) {
   return (
-    <button className="rounded px-3 py-1 text-sm font-medium text-black hover:bg-black/10 transition-colors">
+    <button className="rounded px-2.5 py-1 text-sm font-medium text-secondary hover:text-primary hover:bg-accent transition-colors">
       {label}
     </button>
   )

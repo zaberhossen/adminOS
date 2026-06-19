@@ -1,30 +1,31 @@
 import { Wallpaper } from "@/types/desktop"
 
+/* Wallpapers tuned to PostHog's warm "OS" palette — light, low-contrast
+   surfaces so the cream window chrome reads cleanly on top. */
 export const WALLPAPERS: Wallpaper[] = [
   {
-    id: "retro-illust",
-    name: "Retro Illustration",
+    id: "keyboard-garden",
+    name: "Keyboard Garden",
+    bgColor: "#E1D7C2",
     bgImage:
-      "url('https://images.unsplash.com/photo-1526498460520-4c246339dccb?auto=format&fit=crop&w=1600&q=80')",
+      "radial-gradient(circle at 20% 30%, rgba(255,255,255,0.35) 0%, transparent 45%), radial-gradient(circle at 80% 75%, rgba(106,168,79,0.18) 0%, transparent 50%)",
+  },
+  {
+    id: "soft-cream",
+    name: "Soft Cream",
+    bgColor: "#EEEFE9",
+    bgImage:
+      "linear-gradient(90deg, rgba(35,37,29,0.04) 1px, transparent 1px), linear-gradient(180deg, rgba(35,37,29,0.04) 1px, transparent 1px)",
+    bgSize: "44px 44px",
+  },
+  {
+    id: "startup-monopoly",
+    name: "Startup Monopoly",
+    bgColor: "#FEFCED",
+    bgImage:
+      "url('https://res.cloudinary.com/dmukukwp6/image/upload/startup_monopoly_2ac9d45ce3.png')",
     bgSize: "cover",
     bgPosition: "center",
-    bgRepeat: "no-repeat",
-  },
-  {
-    id: "teal-grid",
-    name: "Teal Grid",
-    bgColor: "#008080",
-    bgImage:
-      "linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(180deg, rgba(255,255,255,0.06) 1px, transparent 1px)",
-    bgSize: "48px 48px",
-  },
-  {
-    id: "soft-beige",
-    name: "Soft Beige",
-    bgColor: "#b4a388",
-    bgImage:
-      "radial-gradient(circle at 25% 25%, rgba(255,255,255,0.18) 0 18%, transparent 20%), radial-gradient(circle at 75% 75%, rgba(255,255,255,0.15) 0 20%, transparent 22%)",
-    bgSize: "180px 180px",
   },
   {
     id: "bliss",
@@ -36,26 +37,17 @@ export const WALLPAPERS: Wallpaper[] = [
     bgPosition: "center",
   },
   {
-    id: "startup-monopoly",
-    name: "Startup Monopoly",
-    bgColor: "#1a1a1a",
+    id: "warm-dawn",
+    name: "Warm Dawn",
+    bgColor: "#FFF1D5",
     bgImage:
-      "url('https://res.cloudinary.com/dmukukwp6/image/upload/startup_monopoly_2ac9d45ce3.png')",
+      "linear-gradient(160deg, #FFF1D5 0%, #E5E7E0 55%, #DAE0EB 100%)",
   },
   {
-    id: "purple-gradient",
-    name: "Purple Dreams",
-    bgColor: "#6b46c1",
+    id: "coding-at-night",
+    name: "Coding at Night",
+    bgColor: "#54618E",
     bgImage:
-      "radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.4) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.4) 0%, transparent 50%)",
-  },
-  {
-    id: "study-books",
-    name: "Study Mode",
-    bgColor: "#2c3e50",
-    bgImage:
-      "url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1600&q=80')",
-    bgSize: "cover",
-    bgPosition: "center",
+      "radial-gradient(circle at 75% 20%, rgba(255,255,255,0.12) 0%, transparent 45%)",
   },
 ]

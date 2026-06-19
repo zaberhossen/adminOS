@@ -10,10 +10,11 @@ interface WindowChromeProps {
   windowState: WindowState
   dragControls: DragControls
   isDragging: boolean
+  onToggleMaximize: () => void
 }
 
-export function WindowChrome({ windowState, dragControls, isDragging }: WindowChromeProps) {
-  const { closeWindow, minimizeWindow, maximizeWindow, restoreWindow } = useDesktop()
+export function WindowChrome({ windowState, dragControls, isDragging, onToggleMaximize }: WindowChromeProps) {
+  const { closeWindow, minimizeWindow } = useDesktop()
 
   const handleClose = () => {
     closeWindow(windowState.id)
@@ -24,93 +25,75 @@ export function WindowChrome({ windowState, dragControls, isDragging }: WindowCh
   }
 
   const handleMaximize = () => {
-    if (windowState.isMaximized) {
-      restoreWindow(windowState.id)
-    } else {
-      maximizeWindow(windowState.id)
-    }
+    onToggleMaximize()
   }
 
   const handleDoubleClick = () => {
     if (windowState.appSettings.maximizable !== false) {
-      handleMaximize()
+      onToggleMaximize()
     }
   }
 
   return (
     <div
+      data-scheme="tertiary"
       onPointerDown={(e) => dragControls.start(e)}
       onDoubleClick={handleDoubleClick}
       className={cn(
-        "flex items-center justify-between",
-        "h-8 px-2 cursor-move select-none",
-        "bg-gradient-to-b from-[#0054e3] to-[#0099ff]",
-        "border-b border-[#808080]",
-        isDragging && "cursor-grabbing"
+        "flex-shrink-0 w-full grid grid-cols-[minmax(80px,auto)_1fr_minmax(80px,auto)] gap-1 items-center",
+        "py-1 pl-2 pr-1 select-none",
+        "bg-primary/50 backdrop-blur-2xl skin-classic:bg-primary border-b border-input",
+        isDragging ? "cursor-grabbing" : "cursor-move"
       )}
     >
-      {/* Window Icon and Title */}
-      <div className="flex items-center gap-2 flex-1 min-w-0">
+      {/* Left: window icon */}
+      <div className="flex items-center gap-1.5 min-w-0">
         <span className="text-sm">{windowState.icon}</span>
-        <span className="text-sm font-semibold text-white truncate">
+      </div>
+
+      {/* Center: title */}
+      <div className="flex-1 truncate flex items-center justify-center">
+        <span className="text-sm font-semibold text-primary truncate select-none">
           {windowState.title}
         </span>
       </div>
 
-      {/* Window Controls */}
-      <div className="flex items-center gap-1">
-        {/* Minimize Button */}
+      {/* Right: window controls */}
+      <div className="flex items-center justify-end gap-0.5">
         {windowState.appSettings.minimizable !== false && (
           <button
             onClick={handleMinimize}
             onPointerDown={(e) => e.stopPropagation()}
-            className={cn(
-              "flex items-center justify-center w-6 h-6 rounded",
-              "bg-white/90 hover:bg-white",
-              "border border-black/20",
-              "transition-colors"
-            )}
+            className="flex items-center justify-center size-6 rounded text-secondary hover:text-primary hover:bg-accent transition-colors"
             title="Minimize"
           >
-            <Minus className="h-3 w-3 text-black" />
+            <Minus className="size-4" />
           </button>
         )}
 
-        {/* Maximize Button */}
         {windowState.appSettings.maximizable !== false && (
           <button
             onClick={handleMaximize}
             onPointerDown={(e) => e.stopPropagation()}
-            className={cn(
-              "flex items-center justify-center w-6 h-6 rounded",
-              "bg-white/90 hover:bg-white",
-              "border border-black/20",
-              "transition-colors"
-            )}
+            className="flex items-center justify-center size-6 rounded text-secondary hover:text-primary hover:bg-accent transition-colors"
             title={windowState.isMaximized ? "Restore" : "Maximize"}
           >
             {windowState.isMaximized ? (
-              <Square className="h-3 w-3 text-black" />
+              <Square className="size-3.5" />
             ) : (
-              <Maximize2 className="h-3 w-3 text-black" />
+              <Maximize2 className="size-3.5" />
             )}
           </button>
         )}
 
-        {/* Close Button */}
         {windowState.appSettings.closable !== false && (
           <button
             onClick={handleClose}
             onPointerDown={(e) => e.stopPropagation()}
-            className={cn(
-              "flex items-center justify-center w-6 h-6 rounded",
-              "bg-red-500/90 hover:bg-red-500",
-              "border border-black/20",
-              "transition-colors"
-            )}
+            className="flex items-center justify-center size-6 rounded text-secondary hover:text-white hover:bg-red transition-colors"
             title="Close"
           >
-            <X className="h-3 w-3 text-white" />
+            <X className="size-4" />
           </button>
         )}
       </div>

@@ -16,18 +16,18 @@ export function ResizeHandles({ onResize, onResizeStart, onResizeEnd }: ResizeHa
   const handlePointerDown = (direction: string) => (e: React.PointerEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     currentDirection.current = direction
     dragStart.current = { x: e.clientX, y: e.clientY }
     onResizeStart()
 
+    // delta is always measured from the pointer-down origin (NOT reset each move),
+    // so the consumer applies it to a single captured base size — no drift.
     const handlePointerMove = (moveEvent: PointerEvent) => {
-      const delta = {
+      onResize(direction, {
         x: moveEvent.clientX - dragStart.current.x,
         y: moveEvent.clientY - dragStart.current.y,
-      }
-      onResize(direction, delta)
-      dragStart.current = { x: moveEvent.clientX, y: moveEvent.clientY }
+      })
     }
 
     const handlePointerUp = () => {
@@ -40,7 +40,7 @@ export function ResizeHandles({ onResize, onResizeStart, onResizeEnd }: ResizeHa
     document.addEventListener("pointerup", handlePointerUp)
   }
 
-  const handleStyles = "absolute bg-transparent hover:bg-blue-500/20 transition-colors"
+  const handleStyles = "absolute bg-transparent hover:bg-light-8 transition-colors"
 
   return (
     <>
