@@ -1,48 +1,59 @@
 "use client"
 
 import { useEffect } from "react"
-import { useDesktop } from "./use-desktop"
+import { useDesktopStore } from "@/stores/desktop-store"
 
 export function useKeyboardShortcuts() {
-  const { focusedWindow, closeWindow, minimizeWindow, maximizeWindow, closeAllWindows } =
-    useDesktop()
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const state = useDesktopStore.getState()
+      const { focusedWindow } = state
       const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
       const modKey = isMac ? e.metaKey : e.ctrlKey
 
-      // Cmd/Ctrl + W - Close focused window
-      if (modKey && e.key === "w" && focusedWindow) {
+      // Cmd/Ctrl + W — close focused window
+      if (modKey && !e.shiftKey && e.key === "w" && focusedWindow) {
         e.preventDefault()
-        closeWindow(focusedWindow.id)
+        state.closeWindow(focusedWindow.id)
+        return
       }
 
-      // Cmd/Ctrl + M - Minimize focused window
-      if (modKey && e.key === "m" && focusedWindow) {
+      // Cmd/Ctrl + M — minimize focused window
+      if (modKey && !e.shiftKey && e.key === "m" && focusedWindow) {
         e.preventDefault()
-        minimizeWindow(focusedWindow.id)
+        state.minimizeWindow(focusedWindow.id)
+        return
       }
 
-      // Cmd/Ctrl + Shift + M - Maximize focused window
-      if (modKey && e.shiftKey && e.key === "M" && focusedWindow) {
+      // Cmd/Ctrl + Shift + M — maximize focused window
+      if (modKey && e.shiftKey && (e.key === "M" || e.key === "m") && focusedWindow) {
         e.preventDefault()
-        maximizeWindow(focusedWindow.id)
+        state.maximizeWindow(focusedWindow.id)
+        return
       }
 
-      // Cmd/Ctrl + Shift + W - Close all windows
-      if (modKey && e.shiftKey && e.key === "W") {
+      // Cmd/Ctrl + Shift + W — close all windows
+      if (modKey && e.shiftKey && (e.key === "W" || e.key === "w")) {
         e.preventDefault()
-        closeAllWindows()
+        state.closeAllWindows()
+        return
       }
 
-      // Escape - Close start menu or unfocus window
+      // Cmd/Ctrl + L — lock the session
+      if (modKey && e.key === "l") {
+        e.preventDefault()
+        state.lock()
+        return
+      }
+
+      // Escape — close transient surfaces
       if (e.key === "Escape") {
-        // This will be handled by the start menu component
+        if (state.startMenuOpen) state.setStartMenuOpen(false)
+        if (state.notificationCenterOpen) state.setNotificationCenterOpen(false)
       }
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [focusedWindow, closeWindow, minimizeWindow, maximizeWindow, closeAllWindows])
+  }, [])
 }

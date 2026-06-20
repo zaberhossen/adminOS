@@ -92,6 +92,49 @@ export function useStartMenu() {
 }
 
 /**
+ * Hook for system session state: boot splash, lock screen, sleep mode.
+ */
+export function useSystem() {
+  const isBooting = useDesktopStore((state) => state.isBooting)
+  const setBooting = useDesktopStore((state) => state.setBooting)
+  const isLocked = useDesktopStore((state) => state.isLocked)
+  const lock = useDesktopStore((state) => state.lock)
+  const unlock = useDesktopStore((state) => state.unlock)
+  const isAsleep = useDesktopStore((state) => state.isAsleep)
+  const sleep = useDesktopStore((state) => state.sleep)
+  const wake = useDesktopStore((state) => state.wake)
+
+  return { isBooting, setBooting, isLocked, lock, unlock, isAsleep, sleep, wake }
+}
+
+/**
+ * Hook for the notification center.
+ */
+export function useNotifications() {
+  const notifications = useDesktopStore((state) => state.notifications)
+  const notificationCenterOpen = useDesktopStore((state) => state.notificationCenterOpen)
+  const toggleNotificationCenter = useDesktopStore((state) => state.toggleNotificationCenter)
+  const setNotificationCenterOpen = useDesktopStore((state) => state.setNotificationCenterOpen)
+  const pushNotification = useDesktopStore((state) => state.pushNotification)
+  const markNotificationRead = useDesktopStore((state) => state.markNotificationRead)
+  const markAllNotificationsRead = useDesktopStore((state) => state.markAllNotificationsRead)
+  const dismissNotification = useDesktopStore((state) => state.dismissNotification)
+  const clearNotifications = useDesktopStore((state) => state.clearNotifications)
+
+  return {
+    notifications,
+    notificationCenterOpen,
+    toggleNotificationCenter,
+    setNotificationCenterOpen,
+    pushNotification,
+    markNotificationRead,
+    markAllNotificationsRead,
+    dismissNotification,
+    clearNotifications,
+  }
+}
+
+/**
  * Hook to get a specific window by ID
  */
 export function useWindow(id: string) {

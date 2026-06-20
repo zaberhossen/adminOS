@@ -6,6 +6,7 @@ import { WindowState } from "@/types/window"
 import { useDesktop } from "@/hooks/use-desktop"
 import { WindowChrome } from "./window-chrome"
 import { ResizeHandles } from "./resize-handles"
+import { getApp } from "@/components/apps/registry"
 import { cn } from "@/lib/utils"
 
 interface WindowProps {
@@ -31,6 +32,7 @@ export function Window({ windowState, constraintsRef }: WindowProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
   const [snapIndicator, setSnapIndicator] = useState<"left" | "right" | null>(null)
+  const [snapWidth, setSnapWidth] = useState<number | null>(null)
 
   // Position is driven by motion values so dragging never triggers a React
   // re-render (smooth + no lag) and the released value is the constraint-clamped
@@ -64,7 +66,9 @@ export function Window({ windowState, constraintsRef }: WindowProps) {
   const handleDragStart = () => {
     setIsDragging(true)
     bringToFront(windowState.id)
-    containerRect.current = constraintsRef.current?.getBoundingClientRect() ?? null
+    const rect = constraintsRef.current?.getBoundingClientRect() ?? null
+    containerRect.current = rect
+    setSnapWidth(rect ? rect.width / 2 : null)
   }
 
   const handleDrag = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -194,11 +198,7 @@ export function Window({ windowState, constraintsRef }: WindowProps) {
             "pointer-events-none absolute top-0 z-[9999] h-full rounded-md border-2 border-blue bg-blue/40",
             snapIndicator === "left" ? "left-0" : "right-0"
           )}
-          style={{
-            width: containerRect.current
-              ? containerRect.current.width / 2
-              : "50%",
-          }}
+          style={{ width: snapWidth ?? "50%" }}
         />
       )}
 
@@ -245,15 +245,7 @@ export function Window({ windowState, constraintsRef }: WindowProps) {
 
         {/* Content */}
         <div data-scheme="primary" className="relative flex-1 overflow-auto bg-primary text-primary">
-          {windowState.element || (
-            <div className="flex h-full items-center justify-center p-8 text-center">
-              <div>
-                <div className="mb-2 text-4xl">{windowState.icon}</div>
-                <div className="text-lg font-semibold text-primary">{windowState.title}</div>
-                <div className="mt-2 text-sm text-muted">{windowState.path}</div>
-              </div>
-            </div>
-          )}
+          <WindowContent windowState={windowState} />
         </div>
 
         {/* Resize handles */}
@@ -267,5 +259,29 @@ export function Window({ windowState, constraintsRef }: WindowProps) {
           )}
       </motion.div>
     </>
+  )
+}
+
+/**
+ * Resolves window content: an explicit `element` wins, otherwise the app is
+ * looked up by path in the registry (lazy-loaded). Falls back to a placeholder.
+ */
+function WindowContent({ windowState }: { windowState: WindowState }) {
+  if (windowState.element) return <>{windowState.element}</>
+
+  const app = getApp(windowState.path)
+  if (app) {
+    const App = app.Component
+    return <App />
+  }
+
+  return (
+    <div className="flex h-full items-center justify-center p-8 text-center">
+      <div>
+        <div className="mb-2 text-4xl">{windowState.icon}</div>
+        <div className="text-lg font-semibold text-primary">{windowState.title}</div>
+        <div className="mt-2 text-sm text-muted">{windowState.path}</div>
+      </div>
+    </div>
   )
 }

@@ -21,13 +21,16 @@ export interface DesktopIcon {
   action?: () => void
 }
 
+export type ThemeMode = "light" | "dark" | "system"
+
 export interface SiteSettings {
-  theme: "light" | "dark" | "system"
+  theme: ThemeMode
   wallpaperIndex: number
   animations: boolean
   cursorStyle: "default" | "xl" | "custom"
   iconSize: "small" | "medium" | "large"
-  experience: "studyos" | "boring" // OS mode vs traditional website
+  experience: "os" | "boring" // OS mode vs traditional website
+  reduceMotion: boolean
 }
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
@@ -36,5 +39,19 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   animations: true,
   cursorStyle: "default",
   iconSize: "medium",
-  experience: "studyos",
+  experience: "os",
+  reduceMotion: false,
+}
+
+export type NotificationKind = "info" | "success" | "warning" | "error"
+
+export interface AppNotification {
+  id: string
+  kind: NotificationKind
+  title: string
+  body: string
+  app: string
+  icon: string
+  timestamp: number
+  read: boolean
 }

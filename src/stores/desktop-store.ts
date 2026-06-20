@@ -1,14 +1,19 @@
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
 import { WindowState, WindowPosition, WindowSize, AppSettings } from "@/types/window"
-import { SiteSettings, DEFAULT_SITE_SETTINGS, IconPosition } from "@/types/desktop"
+import {
+  SiteSettings,
+  DEFAULT_SITE_SETTINGS,
+  IconPosition,
+  AppNotification,
+} from "@/types/desktop"
 
 interface DesktopStore {
   // Window Management
   windows: WindowState[]
   focusedWindow: WindowState | null
   maxZIndex: number
-  
+
   // Window Actions
   addWindow: (config: Partial<WindowState> & Pick<WindowState, "id" | "path" | "title">) => void
   closeWindow: (id: string) => void
@@ -21,26 +26,47 @@ interface DesktopStore {
   updateWindow: (id: string, updates: Partial<WindowState>) => void
   setWindowTitle: (id: string, title: string) => void
   closeAllWindows: () => void
-  
+
   // Window Helpers
   getWindowById: (id: string) => WindowState | undefined
   getDesktopCenterPosition: (size: WindowSize) => WindowPosition
   getPositionDefaults: (path: string, size: WindowSize) => WindowPosition
-  
+
   // Settings
   siteSettings: SiteSettings
   updateSiteSettings: (settings: Partial<SiteSettings>) => void
-  
+
   // Desktop Icons
   iconPositions: Record<string, IconPosition>
   setIconPosition: (iconId: string, position: IconPosition) => void
   resetIconPositions: () => void
-  
+
   // UI State
   startMenuOpen: boolean
   toggleStartMenu: () => void
   setStartMenuOpen: (open: boolean) => void
-  
+
+  // System session state (ephemeral — never persisted)
+  isBooting: boolean
+  setBooting: (booting: boolean) => void
+  isLocked: boolean
+  lock: () => void
+  unlock: () => void
+  isAsleep: boolean
+  sleep: () => void
+  wake: () => void
+
+  // Notification center
+  notifications: AppNotification[]
+  notificationCenterOpen: boolean
+  toggleNotificationCenter: () => void
+  setNotificationCenterOpen: (open: boolean) => void
+  pushNotification: (n: Omit<AppNotification, "id" | "timestamp" | "read">) => void
+  markNotificationRead: (id: string) => void
+  markAllNotificationsRead: () => void
+  dismissNotification: (id: string) => void
+  clearNotifications: () => void
+
   // Constraints
   taskbarHeight: number
   menuBarHeight: number
@@ -58,30 +84,76 @@ const DEFAULT_SIZE_CONSTRAINTS = {
 const APP_SETTINGS: Record<string, AppSettings> = {
   "/": {
     size: {
-      min: { width: 700, height: 500 },
-      max: { width: 800, height: 800 },
+      min: { width: 720, height: 520 },
+      max: { width: 900, height: 820 },
       fixed: false,
     },
     position: { center: true },
   },
-  "/courses": {
+  "/dashboard": {
     size: {
-      min: { width: 900, height: 600 },
-      max: { width: 1200, height: 900 },
+      min: { width: 960, height: 620 },
+      max: { width: 1320, height: 920 },
     },
     position: { center: true },
   },
-  "/library": {
+  "/users": {
     size: {
-      min: { width: 800, height: 600 },
+      min: { width: 880, height: 600 },
     },
   },
-  "/notes": {
+  "/analytics": {
     size: {
-      min: { width: 600, height: 500 },
+      min: { width: 920, height: 600 },
     },
+  },
+  "/files": {
+    size: {
+      min: { width: 760, height: 540 },
+    },
+  },
+  "/ui-kit": {
+    size: {
+      min: { width: 860, height: 640 },
+      max: { width: 1200, height: 920 },
+    },
+    position: { center: true },
   },
 }
+
+// Seed notifications so the center isn't empty in the template demo.
+const SEED_NOTIFICATIONS: AppNotification[] = [
+  {
+    id: "seed-welcome",
+    kind: "info",
+    title: "Welcome to adminOS",
+    body: "Your Next.js admin template is ready. Explore the apps from the desktop.",
+    app: "System",
+    icon: "🪟",
+    timestamp: 0,
+    read: false,
+  },
+  {
+    id: "seed-deploy",
+    kind: "success",
+    title: "Deployment succeeded",
+    body: "Production build #248 went live in 42s.",
+    app: "Dashboard",
+    icon: "🚀",
+    timestamp: 0,
+    read: false,
+  },
+  {
+    id: "seed-users",
+    kind: "warning",
+    title: "3 users pending review",
+    body: "New sign-ups are waiting for approval in the Users app.",
+    app: "Users",
+    icon: "👥",
+    timestamp: 0,
+    read: false,
+  },
+]
 
 export const useDesktopStore = create<DesktopStore>()(
   persist(
@@ -96,11 +168,18 @@ export const useDesktopStore = create<DesktopStore>()(
       siteSettings: DEFAULT_SITE_SETTINGS,
       iconPositions: {},
 
+      // System session state
+      isBooting: true,
+      isLocked: true,
+      isAsleep: false,
+      notifications: SEED_NOTIFICATIONS,
+      notificationCenterOpen: false,
+
       // Window Actions
       addWindow: (config) => {
         const state = get()
         const existingWindow = state.windows.find((w) => w.path === config.path)
-        
+
         // If window already exists, bring it to front
         if (existingWindow) {
           get().bringToFront(existingWindow.id)
@@ -109,12 +188,12 @@ export const useDesktopStore = create<DesktopStore>()(
 
         const appSettings = APP_SETTINGS[config.path] || {}
         const sizeConstraints = config.sizeConstraints || appSettings.size || DEFAULT_SIZE_CONSTRAINTS
-        
+
         const defaultSize = {
           width: Math.max(sizeConstraints.min.width, 800),
           height: Math.max(sizeConstraints.min.height, 600),
         }
-        
+
         const size = config.size || defaultSize
         const position = config.position || get().getPositionDefaults(config.path, size)
 
@@ -157,7 +236,7 @@ export const useDesktopStore = create<DesktopStore>()(
                 ? windows[windows.length - 1]
                 : null
               : state.focusedWindow
-          
+
           return { windows, focusedWindow }
         })
       },
@@ -293,7 +372,7 @@ export const useDesktopStore = create<DesktopStore>()(
 
       getPositionDefaults: (path, size) => {
         const appSettings = APP_SETTINGS[path]
-        
+
         if (appSettings?.position?.center) {
           return get().getDesktopCenterPosition(size)
         }
@@ -309,7 +388,7 @@ export const useDesktopStore = create<DesktopStore>()(
         // Default: cascade windows
         const windows = get().windows
         const offset = (windows.length % 5) * 40
-        
+
         return {
           x: 80 + offset,
           y: 60 + offset,
@@ -345,9 +424,48 @@ export const useDesktopStore = create<DesktopStore>()(
       setStartMenuOpen: (open) => {
         set({ startMenuOpen: open })
       },
+
+      // System session state
+      setBooting: (booting) => set({ isBooting: booting }),
+      lock: () => set({ isLocked: true, startMenuOpen: false, notificationCenterOpen: false }),
+      unlock: () => set({ isLocked: false }),
+      sleep: () => set({ isAsleep: true, startMenuOpen: false, notificationCenterOpen: false }),
+      wake: () => set({ isAsleep: false }),
+
+      // Notification center
+      toggleNotificationCenter: () =>
+        set((state) => ({ notificationCenterOpen: !state.notificationCenterOpen })),
+      setNotificationCenterOpen: (open) => set({ notificationCenterOpen: open }),
+      pushNotification: (n) =>
+        set((state) => ({
+          notifications: [
+            {
+              ...n,
+              id: `n-${Date.now()}-${Math.round(Math.random() * 1e6)}`,
+              timestamp: Date.now(),
+              read: false,
+            },
+            ...state.notifications,
+          ],
+        })),
+      markNotificationRead: (id) =>
+        set((state) => ({
+          notifications: state.notifications.map((n) =>
+            n.id === id ? { ...n, read: true } : n
+          ),
+        })),
+      markAllNotificationsRead: () =>
+        set((state) => ({
+          notifications: state.notifications.map((n) => ({ ...n, read: true })),
+        })),
+      dismissNotification: (id) =>
+        set((state) => ({
+          notifications: state.notifications.filter((n) => n.id !== id),
+        })),
+      clearNotifications: () => set({ notifications: [] }),
     }),
     {
-      name: "studyos-desktop-storage",
+      name: "adminos-desktop-storage",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         siteSettings: state.siteSettings,

@@ -6,6 +6,7 @@ import { useDesktop, useDesktopIcons } from "@/hooks/use-desktop"
 import { DESKTOP_ICONS } from "./desktop-icons"
 import { DesktopIcon as DesktopIconComponent } from "../desktop-icon"
 import { IconPosition } from "@/types/desktop"
+import { nextId } from "@/lib/id"
 
 interface DesktopProps {
   constraintsRef: React.RefObject<HTMLDivElement | null>
@@ -44,6 +45,9 @@ export function Desktop({ constraintsRef }: DesktopProps) {
   }
 
   useEffect(() => {
+    // Mount guard so icon positions (read from persisted state) only render
+    // client-side, avoiding a hydration mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
 
     // Initialize icon positions if not already set
@@ -69,10 +73,10 @@ export function Desktop({ constraintsRef }: DesktopProps) {
     if (icon.action) {
       icon.action()
     } else if (icon.path) {
-      const timestamp = Date.now()
+      const id = nextId(`window-${iconId}`)
       addWindow({
-        id: `window-${iconId}-${timestamp}`,
-        key: `window-${iconId}-${timestamp}`,
+        id,
+        key: id,
         path: icon.path,
         title: icon.label,
         icon: icon.icon,
@@ -108,7 +112,7 @@ export function Desktop({ constraintsRef }: DesktopProps) {
             drag
             dragMomentum={false}
             dragConstraints={constraintsRef}
-            onDragEnd={(event, info) => {
+            onDragEnd={(_event, info) => {
               handlePositionChange(icon.id, {
                 x: position.x + info.offset.x,
                 y: position.y + info.offset.y,

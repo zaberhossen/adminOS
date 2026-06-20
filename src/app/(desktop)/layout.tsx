@@ -1,6 +1,6 @@
 "use client"
 
-import { DesktopWrapper } from "@/components/desktop/desktop-wrapper"
+import { SystemShell } from "@/components/system/system-shell"
 
 export default function DesktopLayout({
   children,
@@ -9,8 +9,8 @@ export default function DesktopLayout({
 }) {
   return (
     <>
-      <DesktopWrapper />
-      {/* Hidden container for Next.js pages - they'll be rendered in windows */}
+      <SystemShell />
+      {/* Hidden container for Next.js pages — they render inside windows */}
       <div className="hidden">{children}</div>
     </>
   )
